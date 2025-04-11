@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.sddisk.todorestapi.exception.TaskAlreadyExistsException;
 import ru.sddisk.todorestapi.exception.TaskNotFoundException;
 
+import java.util.List;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -15,16 +17,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex
     ) {
-        String errorMsg = ex.getBindingResult()
+        List<String> errorMessages = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .findFirst()
-                .map(fieldError -> "error - " + fieldError.getDefaultMessage())
-                .orElse("Validation error");
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .toList();
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                errorMsg
+                "Validation failed",
+                errorMessages
         );
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -37,31 +39,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new ErrorResponse(
                         HttpStatus.NOT_FOUND.value(),
-                        ex.getMessage()
+                        "Entity not exists",
+                        List.of(ex.getMessage())
                 ),
                 HttpStatus.NOT_FOUND
         );
     }
-
-//    @ExceptionHandler(DataIntegrityViolationException.class)
-//    public ResponseEntity<ErrorResponse> handleUniqueConstraintException(
-//            DataIntegrityViolationException ex
-//    ) {
-//        String errorMsg = "Error saving data";
-//
-//        Throwable rootCause = ex.getRootCause();
-//        if (rootCause != null && rootCause.getMessage().contains("unique constraint")) {
-//            errorMsg = "Task with this title already exists";
-//        }
-//
-//        return new ResponseEntity<>(
-//                new ErrorResponse(
-//                        HttpStatus.CONFLICT.value(),
-//                        errorMsg
-//                ),
-//                HttpStatus.CONFLICT
-//        );
-//    }
 
     @ExceptionHandler(TaskAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleTaskAlreadyExistsException(
@@ -70,11 +53,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new ErrorResponse(
                         HttpStatus.CONFLICT.value(),
-                        ex.getMessage()
+                        "Entity already exists",
+                        List.of(ex.getMessage())
                 ),
                 HttpStatus.CONFLICT
         );
     }
 
-    public record ErrorResponse(int status, String message) {}
+    public record ErrorResponse(int status, String message, List<String> errors) {}
 }

@@ -70,6 +70,10 @@ public class TaskService {
     // delete by id
     @Transactional
     public void deleteTask(Long id) {
+        if (!taskRepository.existsById(id)) {
+            throw new TaskNotFoundException("Task with id: {" + id + "} not found");
+        }
+
         taskRepository.deleteById(id);
     }
 }
