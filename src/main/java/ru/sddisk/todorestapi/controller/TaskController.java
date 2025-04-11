@@ -28,8 +28,22 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getTasks() {
-        log.info("GET /tasks");
+    public ResponseEntity<?> getTasks(
+            @RequestParam(
+                    name = "includeTimestamps",
+                    required = false,
+                    defaultValue = "false") Boolean includeTimestamps) {
+        log.info("GET /tasks | Parameters: includeTimestamps={}", includeTimestamps);
+
+        if (includeTimestamps) {
+            return new ResponseEntity<>(
+                    TaskMapper.toAdditionalResponseList(
+                            taskService.getTasks()
+                    ),
+                    HttpStatus.OK
+            );
+        }
+
         return new ResponseEntity<>(
                 TaskMapper.toResponseList(
                         taskService.getTasks()
@@ -39,8 +53,27 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> getTask(@PathVariable Long id) {
-        log.info("GET /tasks/{} ", id);
+    public ResponseEntity<?> getTask(
+            @PathVariable Long id,
+            @RequestParam(
+                    name = "includeTimestamps",
+                    required = false,
+                    defaultValue = "false") Boolean includeTimestamps) {
+        log.info(
+                "GET /tasks/{} | Parameters: includeTimestamps={}",
+                id,
+                includeTimestamps
+        );
+
+        if (includeTimestamps) {
+            return new ResponseEntity<>(
+                    TaskMapper.toAdditionalResponse(
+                            taskService.getTaskById(id)
+                    ),
+                    HttpStatus.OK
+            );
+        }
+
         return new ResponseEntity<>(
                 TaskMapper.toResponse(
                         taskService.getTaskById(id)
@@ -76,7 +109,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+    public ResponseEntity<?> deleteTask(@PathVariable Long id) {
         log.info("DELETE /tasks/{}", id);
         taskService.deleteTask(id);
         return new ResponseEntity<>(

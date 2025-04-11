@@ -1,5 +1,6 @@
 package ru.sddisk.todorestapi.mapper;
 
+import ru.sddisk.todorestapi.dto.TaskAdditionalResponse;
 import ru.sddisk.todorestapi.dto.TaskCreateRequest;
 import ru.sddisk.todorestapi.dto.TaskResponse;
 import ru.sddisk.todorestapi.dto.TaskUpdateRequest;
@@ -46,6 +47,24 @@ public class TaskMapper {
     public static List<TaskResponse> toResponseList(List<Task> tasks) {
         return tasks.stream()
                 .map(TaskMapper::toResponse)
+                .toList();
+    }
+
+    // task -> additional response
+    public static TaskAdditionalResponse toAdditionalResponse(Task task) {
+        return new TaskAdditionalResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getCreatedAt(),
+                task.getUpdatedAt()
+        );
+    }
+
+    // task -> additional responses
+    public static List<TaskAdditionalResponse> toAdditionalResponseList(List<Task> tasks) {
+        return tasks.stream()
+                .map(TaskMapper::toAdditionalResponse)
                 .toList();
     }
 }
