@@ -1,6 +1,8 @@
 package ru.sddisk.todorestapi.controller;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,8 @@ import java.util.List;
 public class TaskController {
     private final TaskService taskService;
 
+    private final Logger log = LoggerFactory.getLogger(TaskController.class);
+
     @Autowired
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
@@ -25,6 +29,7 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getTasks() {
+        log.info("GET /tasks");
         return new ResponseEntity<>(
                 TaskMapper.toResponseList(
                         taskService.getTasks()
@@ -35,6 +40,7 @@ public class TaskController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskResponse> getTask(@PathVariable Long id) {
+        log.info("GET /tasks/{} ", id);
         return new ResponseEntity<>(
                 TaskMapper.toResponse(
                         taskService.getTaskById(id)
@@ -45,6 +51,7 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<TaskResponse> createTask(@RequestBody @Valid TaskCreateRequest req) {
+        log.info("POST /tasks | Request: {}", req);
         return new ResponseEntity<>(
                 TaskMapper.toResponse(
                         taskService.createTask(
@@ -57,6 +64,7 @@ public class TaskController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TaskResponse> updateTask(@PathVariable Long id, @RequestBody @Valid TaskUpdateRequest req) {
+        log.info("PUT /tasks/{} | Request: {}", id, req);
         return ResponseEntity.ok(
                 TaskMapper.toResponse(
                         taskService.updateTask(
@@ -69,6 +77,7 @@ public class TaskController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        log.info("DELETE /tasks/{}", id);
         taskService.deleteTask(id);
         return new ResponseEntity<>(
                 HttpStatus.NO_CONTENT

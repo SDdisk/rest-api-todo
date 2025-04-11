@@ -1,5 +1,7 @@
 package ru.sddisk.todorestapi.advice;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,6 +14,8 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
@@ -29,6 +33,7 @@ public class GlobalExceptionHandler {
                 errorMessages
         );
 
+        logThis(ex, ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -36,6 +41,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTaskNotFoundException(
             TaskNotFoundException ex
     ) {
+        logThis(ex, ex.getMessage());
         return new ResponseEntity<>(
                 new ErrorResponse(
                         HttpStatus.NOT_FOUND.value(),
@@ -50,6 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTaskAlreadyExistsException(
             TaskAlreadyExistsException ex
     ) {
+        logThis(ex, ex.getMessage());
         return new ResponseEntity<>(
                 new ErrorResponse(
                         HttpStatus.CONFLICT.value(),
@@ -61,4 +68,13 @@ public class GlobalExceptionHandler {
     }
 
     public record ErrorResponse(int status, String message, List<String> errors) {}
+
+    private void logThis(Exception exception, String message) {
+        log.error(
+                "Handled exception: '{}' | Message: '{}'",
+                exception.getClass().getSimpleName(),
+                message,
+                exception
+        );
+    }
 }

@@ -2,6 +2,8 @@ package ru.sddisk.todorestapi.model;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 /*
     LOMBOK DOES NOT GENERATE A CODE :(
  */
@@ -58,5 +60,27 @@ public class Task {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return Objects.equals(id, task.id) && Objects.equals(title, task.title) && Objects.equals(description, task.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description);
     }
 }
