@@ -7,40 +7,30 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/*
-    LOMBOK DOES NOT GENERATE A CODE :(
- */
-
 @Entity
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "task_id")
     private Long id;
 
-    @Column(
-            name = "title",
-            unique = true,
-            nullable = false
-    )
+    @Column
     private String title;
 
-    @Column(name = "description")
+    @Column
     private String description;
 
     @CreationTimestamp
-    @Column(
-            name = "created_at",
-            nullable = false
-    )
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(
-            name = "updated_at",
-            nullable = false
-    )
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    // TODO: create field: status. Type: enum {NEW, IN_PROGRESS, DONE}
+    //  Use @Enumerated
 
     public Task() {}
 
@@ -109,11 +99,11 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return Objects.equals(id, task.id) && Objects.equals(title, task.title) && Objects.equals(description, task.description);
+        return Objects.equals(id, task.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description);
+        return Objects.hashCode(id);
     }
 }

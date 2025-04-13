@@ -5,12 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.sddisk.todorestapi.dto.TaskCreateRequest;
-import ru.sddisk.todorestapi.dto.TaskResponse;
-import ru.sddisk.todorestapi.dto.TaskUpdateRequest;
-import ru.sddisk.todorestapi.mapper.TaskMapper;
+import ru.sddisk.todorestapi.dto.TaskDTO;
 import ru.sddisk.todorestapi.service.TaskService;
 
 import java.util.List;
@@ -28,92 +24,32 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getTasks(
-            @RequestParam(
-                    name = "includeTimestamps",
-                    required = false,
-                    defaultValue = "false") Boolean includeTimestamps) {
-        log.info("GET /tasks | Parameters: includeTimestamps={}", includeTimestamps);
-
-        if (includeTimestamps) {
-            return new ResponseEntity<>(
-                    TaskMapper.toAdditionalResponseList(
-                            taskService.getTasks()
-                    ),
-                    HttpStatus.OK
-            );
-        }
-
-        return new ResponseEntity<>(
-                TaskMapper.toResponseList(
-                        taskService.getTasks()
-                ),
-                HttpStatus.OK
-        );
+    @ResponseStatus(HttpStatus.OK)
+    public List<TaskDTO> getTasks() {
+        return taskService.getTasks();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getTask(
-            @PathVariable Long id,
-            @RequestParam(
-                    name = "includeTimestamps",
-                    required = false,
-                    defaultValue = "false") Boolean includeTimestamps) {
-        log.info(
-                "GET /tasks/{} | Parameters: includeTimestamps={}",
-                id,
-                includeTimestamps
-        );
-
-        if (includeTimestamps) {
-            return new ResponseEntity<>(
-                    TaskMapper.toAdditionalResponse(
-                            taskService.getTaskById(id)
-                    ),
-                    HttpStatus.OK
-            );
-        }
-
-        return new ResponseEntity<>(
-                TaskMapper.toResponse(
-                        taskService.getTaskById(id)
-                ),
-                HttpStatus.OK
-        );
+    @GetMapping("/{taskId}")
+    @ResponseStatus(HttpStatus.OK)
+    public TaskDTO getTask(@PathVariable Long taskId) {
+        return taskService.getTaskById(taskId);
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponse> createTask(@RequestBody @Valid TaskCreateRequest req) {
-        log.info("POST /tasks | Request: {}", req);
-        return new ResponseEntity<>(
-                TaskMapper.toResponse(
-                        taskService.createTask(
-                                TaskMapper.toEntity(req)
-                        )
-                ),
-                HttpStatus.CREATED
-        );
+    @ResponseStatus(HttpStatus.CREATED)
+    public TaskDTO createTask(@Valid @RequestBody TaskDTO taskDto) {
+        return taskService.createTask(taskDto);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TaskResponse> updateTask(@PathVariable Long id, @RequestBody @Valid TaskUpdateRequest req) {
-        log.info("PUT /tasks/{} | Request: {}", id, req);
-        return ResponseEntity.ok(
-                TaskMapper.toResponse(
-                        taskService.updateTask(
-                                id,
-                                TaskMapper.toEntity(req)
-                        )
-                )
-        );
+    @PutMapping("/{taskId}")
+    @ResponseStatus(HttpStatus.OK)
+    public TaskDTO updateTask(@PathVariable Long taskId, @Valid @RequestBody TaskDTO taskDto) {
+        return taskService.updateTask(taskId, taskDto);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTask(@PathVariable Long id) {
-        log.info("DELETE /tasks/{}", id);
-        taskService.deleteTask(id);
-        return new ResponseEntity<>(
-                HttpStatus.NO_CONTENT
-        );
+    @DeleteMapping("/{taskId}")
+    @ResponseStatus(HttpStatus.OK)
+    public TaskDTO deleteTask(@PathVariable Long taskId) {
+        return taskService.deleteTaskById(taskId);
     }
 }
