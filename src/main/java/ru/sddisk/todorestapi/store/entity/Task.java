@@ -1,42 +1,54 @@
-package ru.sddisk.todorestapi.model;
+package ru.sddisk.todorestapi.store.entity;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.UpdateTimestamp;
+import ru.sddisk.todorestapi.store.entity.enums.TaskStatus;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
 public class Task {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id")
     private Long id;
 
-    @Column
+    @NaturalId(mutable = true)
+    @Column(nullable = false)
     private String title;
 
-    @Column
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
+
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // TODO: create field: status. Type: enum {NEW, IN_PROGRESS, DONE}
-    //  Use @Enumerated
-
     public Task() {}
 
     public Task(String title, String description) {
         this.title = title;
         this.description = description;
+        this.status = TaskStatus.NEW;
+    }
+
+    public Task(String title, String description, TaskStatus status) {
+        this.title = title;
+        this.description = description;
+        this.status = status;
     }
 
     public Task(Long id, String title, String description) {
@@ -69,6 +81,14 @@ public class Task {
         this.description = description;
     }
 
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -91,6 +111,7 @@ public class Task {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
+                ", status=" + status +
                 '}';
     }
 

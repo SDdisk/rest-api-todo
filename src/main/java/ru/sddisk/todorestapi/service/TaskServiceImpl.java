@@ -3,12 +3,17 @@ package ru.sddisk.todorestapi.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.sddisk.todorestapi.dto.TaskDTO;
+import ru.sddisk.todorestapi.dto.TaskFilterDTO;
+import ru.sddisk.todorestapi.exception.TaskAlreadyExistException;
 import ru.sddisk.todorestapi.exception.TaskNotFoundException;
-import ru.sddisk.todorestapi.model.Task;
-import ru.sddisk.todorestapi.repository.TaskRepository;
+import ru.sddisk.todorestapi.store.specification.TaskSpecs;
+import ru.sddisk.todorestapi.store.entity.Task;
+import ru.sddisk.todorestapi.store.repository.TaskRepository;
 
 import java.util.List;
 
@@ -26,9 +31,17 @@ public class TaskServiceImpl implements TaskService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<TaskDTO> getTasks() {
+    public List<TaskDTO> getTasks(TaskFilterDTO filter) {
         log.info("Fetching all tasks");
-        List<Task> tasks = taskRepository.findAll();
+
+        Specification<Task> spec = Specification.where(null);
+
+        if (filter.status() != null) {
+            spec = spec.and(TaskSpecs.hasStatus(filter.status()));
+            log.info("Filter by status:{}", filter.status());
+        }
+
+        List<Task> tasks = taskRepository.findAll(spec);
 
         log.debug("Fetched {} tasks", tasks.size());
 
@@ -44,18 +57,30 @@ public class TaskServiceImpl implements TaskService {
         Task fetchedTask = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task with id:%s not found".formatted(taskId)));
 
+        log.debug("Fetched task: {}", fetchedTask);
+
         return TaskDTO.fromEntity(fetchedTask);
     }
 
     @Override
     public TaskDTO createTask(TaskDTO taskDto) {
         log.info("Saving task with title: '{}'", taskDto.title());
-        Task savedTask = taskRepository.save(
-                new Task(
-                        taskDto.title(),
-                        taskDto.description()
-                )
-        );
+
+        Task savedTask;
+        try {
+            savedTask = taskRepository.save(
+                    new Task(
+                            taskDto.title(),
+                            taskDto.description(),
+                            taskDto.status()
+                    )
+            );
+        } catch (DataIntegrityViolationException ex) {
+            // sh1t-ch3ck
+            throw new TaskAlreadyExistException(
+                    "Task with title:'%s' already exists".formatted(taskDto.title())
+            );
+        }
 
         log.debug("Saved task: {}", savedTask);
 
@@ -65,103 +90,30 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDTO updateTask(Long taskId, TaskDTO taskDto) {
         log.info("Update task with id:{}", taskId);
-        Task taskToUpdate = taskRepository.findById(taskId)
+
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task with id:%s not found".formatted(taskId)));
 
-        log.debug("Task before: {}", taskToUpdate);
+        log.debug("Task before: {}", task);
 
-        taskToUpdate.setTitle(taskDto.title());
-        taskToUpdate.setDescription(taskDto.description());
+        task.setTitle(taskDto.title());
+        task.setDescription(taskDto.description());
+        task.setStatus(taskDto.status());
 
-        Task savedTask = taskRepository.save(taskToUpdate);
+        Task updatedTask = taskRepository.save(task);
 
-        log.debug("Task after: {}", savedTask);
+        log.debug("Task after: {}", updatedTask);
 
-        return TaskDTO.fromEntity(savedTask);
+        return TaskDTO.fromEntity(task);
     }
 
     @Override
-    public TaskDTO deleteTaskById(Long taskId) {
+    public void deleteTaskById(Long taskId) {
         log.info("Deleting task with id:{}", taskId);
-        Task taskToDelete = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task with id:%s not found".formatted(taskId)));
 
         taskRepository.deleteById(taskId);
 
-        log.debug("Successfully deleted task: {}", taskToDelete);
-
-        return TaskDTO.fromEntity(taskToDelete);
+        log.debug("Successfully deleted task with id:{}", taskId);
     }
-
-/*
-
-        //GET ALL
-        //GET ONE BY ...
-
-
-    // get all
-    @Transactional(readOnly = true)
-    public List<Task> getTasks() {
-        log.info("Fetching all tasks");
-        List<Task> tasks = taskRepository.findAll();
-        log.debug("Fetched {} tasks", tasks.size());
-        return tasks;
-    }
-
-    // get one by id
-    @Transactional(readOnly = true)
-    public Task getTaskById(Long id) {
-        log.info("Fetching task with id: {}", id);
-        return taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNotFoundException("Task with id: {" + id + "} not found"));
-    }
-
-
-        //CREATE
-        //UPDATE
-        //DELETE BY ...
-
-
-    // create
-    @Transactional
-    public Task createTask(Task task) {
-        log.info("Creating task with title: {}", task.getTitle());
-        if (taskRepository.findByTitle(task.getTitle()).isPresent()) {
-            throw new TaskAlreadyExistsException("Task with title: {'" + task.getTitle() + "'} already exists");
-        }
-
-        return taskRepository.save(task);
-    }
-
-    // update
-    @Transactional
-    public Task updateTask(Long id, Task newTask) {
-        log.info("Updating task with id: {}", id);
-        Task toUpdate = getTaskById(id);
-
-        log.debug("Task before: {}", toUpdate);
-
-        if (newTask.getTitle() != null)
-            toUpdate.setTitle(newTask.getTitle());
-
-        if (newTask.getDescription() != null)
-            toUpdate.setDescription(newTask.getDescription());
-
-        log.debug("Task after: {}", toUpdate);
-
-        return taskRepository.save(toUpdate);
-    }
-
-    // delete by id
-    @Transactional
-    public void deleteTask(Long id) {
-        log.info("Deleting task with id: {}", id);
-        if (!taskRepository.existsById(id)) {
-            throw new TaskNotFoundException("Task with id: {" + id + "} not found");
-        }
-
-        taskRepository.deleteById(id);
-    }
-*/
 
 }
