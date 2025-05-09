@@ -4,12 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.sddisk.todorestapi.exception.InvalidTaskStatusException;
-import ru.sddisk.todorestapi.exception.TaskAlreadyExistException;
 import ru.sddisk.todorestapi.exception.model.ErrorResponse;
 import ru.sddisk.todorestapi.exception.model.ErrorValidationResponse;
 import ru.sddisk.todorestapi.exception.TaskNotFoundException;
@@ -58,10 +59,19 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(ex.getMessage(), LocalDateTime.now());
     }
 
-    @ExceptionHandler(TaskAlreadyExistException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleTaskAlreadyExistException(
-            TaskAlreadyExistException ex
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoResourceFoundException(
+            NoResourceFoundException ex
+    ) {
+        logThis(ex, ex.getMessage());
+        return new ErrorResponse(ex.getMessage(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex
     ) {
         logThis(ex, ex.getMessage());
         return new ErrorResponse(ex.getMessage(), LocalDateTime.now());

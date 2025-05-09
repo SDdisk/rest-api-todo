@@ -3,13 +3,11 @@ package ru.sddisk.todorestapi.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.sddisk.todorestapi.dto.TaskDTO;
 import ru.sddisk.todorestapi.dto.TaskFilterDTO;
-import ru.sddisk.todorestapi.exception.TaskAlreadyExistException;
 import ru.sddisk.todorestapi.exception.TaskNotFoundException;
 import ru.sddisk.todorestapi.store.specification.TaskSpecs;
 import ru.sddisk.todorestapi.store.entity.Task;
@@ -66,21 +64,13 @@ public class TaskServiceImpl implements TaskService {
     public TaskDTO createTask(TaskDTO taskDto) {
         log.info("Saving task with title: '{}'", taskDto.title());
 
-        Task savedTask;
-        try {
-            savedTask = taskRepository.save(
-                    new Task(
-                            taskDto.title(),
-                            taskDto.description(),
-                            taskDto.status()
-                    )
-            );
-        } catch (DataIntegrityViolationException ex) {
-            // sh1t-ch3ck
-            throw new TaskAlreadyExistException(
-                    "Task with title:'%s' already exists".formatted(taskDto.title())
-            );
-        }
+        Task savedTask = taskRepository.save(
+                Task.builder()
+                        .title(taskDto.title())
+                        .description(taskDto.description())
+                        .status(taskDto.status())
+                        .build()
+        );
 
         log.debug("Saved task: {}", savedTask);
 
@@ -96,15 +86,23 @@ public class TaskServiceImpl implements TaskService {
 
         log.debug("Task before: {}", task);
 
-        task.setTitle(taskDto.title());
-        task.setDescription(taskDto.description());
-        task.setStatus(taskDto.status());
+        task.setTitle(
+                taskDto.title()
+        );
+        task.setDescription(
+                taskDto.description()
+        );
+        task.setStatus(
+                taskDto.status()
+        );
 
         Task updatedTask = taskRepository.save(task);
 
         log.debug("Task after: {}", updatedTask);
 
-        return TaskDTO.fromEntity(task);
+        Task savedTask = taskRepository.save(task);
+
+        return TaskDTO.fromEntity(savedTask);
     }
 
     @Override

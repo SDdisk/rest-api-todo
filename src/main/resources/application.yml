@@ -1,0 +1,24 @@
+# SPRING
+spring:
+  # APP
+  application:
+    name: ToDo-RESTAPI
+  # DATASOURCE
+  datasource:
+    driver-class-name: ${DB_DRIVER}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  # JPA
+  jpa:
+    properties:
+      hibernate:
+        dialect: ${DB_DIALECT}
+        format_sql: true
+    hibernate:
+      ddl-auto: update
+
+# LOGGER
+logging:
+  level:
+    ru.sddisk.todorestapi: debug

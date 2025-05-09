@@ -16,8 +16,6 @@ public class Task {
     @Column(name = "task_id")
     private Long id;
 
-    @NaturalId(mutable = true)
-    @Column(nullable = false)
     private String title;
 
     private String description;
@@ -37,25 +35,17 @@ public class Task {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public Task() {}
+    /* CONSTRUCTORS */
 
-    public Task(String title, String description) {
-        this.title = title;
-        this.description = description;
-        this.status = TaskStatus.NEW;
+    protected Task() {}
+
+    private Task(Builder b) {
+        this.title = b.title;
+        this.description = b.description;
+        this.status = b.status;
     }
 
-    public Task(String title, String description, TaskStatus status) {
-        this.title = title;
-        this.description = description;
-        this.status = status;
-    }
-
-    public Task(Long id, String title, String description) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-    }
+    /* GETTERS & SETTERS */
 
     public Long getId() {
         return id;
@@ -105,6 +95,8 @@ public class Task {
         this.updatedAt = updatedAt;
     }
 
+    /* OVERRIDE METHODS */
+
     @Override
     public String toString() {
         return "Task{" +
@@ -126,5 +118,38 @@ public class Task {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    /* BUILDER */
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String title;
+        private String description;
+        private TaskStatus status;
+
+        public Builder() {}
+
+        public Builder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder status(TaskStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Task build() {
+            return new Task(this);
+        }
     }
 }
