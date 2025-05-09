@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: alter-task-status-check
+      author: SDdisk
+      changes:
+        - sqlFile:
+            path: db/scripts/alter-task-status-check.sql

@@ -2,7 +2,6 @@ package ru.sddisk.todorestapi.store.entity;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.UpdateTimestamp;
 import ru.sddisk.todorestapi.store.entity.enums.TaskStatus;
 

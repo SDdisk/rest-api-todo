@@ -8,13 +8,20 @@ import ru.sddisk.todorestapi.store.entity.enums.TaskStatus;
 
 public record TaskDTO(
         Long id,
+
         @NotBlank(message = "Title cannot be empty or null")
+        @Size(
+                max = 255,
+                message = "The title cannot exceed 255 characters in length"
+        )
         String title,
+
         @Size(
                 max = 5000,
                 message = "The description cannot exceed 5000 characters in length"
         )
         String description,
+
         @NotNull(message = "Status cannot be null")
         TaskStatus status
 ) {

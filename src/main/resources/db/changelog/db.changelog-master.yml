@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - includeAll:
+      path: db/changelog/versions/v1/
+      relativeToChangelogFile: false
+  - includeAll:
+      path: db/changelog/versions/v2/
+      relativeToChangelogFile: false

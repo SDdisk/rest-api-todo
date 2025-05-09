@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-initial-tasks
+      author: SDdisk
+      changes:
+        - sqlFile:
+            path: db/scripts/insert-initial-tasks.sql

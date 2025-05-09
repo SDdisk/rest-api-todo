@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-table
+      author: SDdisk
+      changes:
+        - createTable:
+            tableName: task
+            columns:
+              - column:
+                  name: task_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: nvarchar(255)
+              - column:
+                  name: description
+                  type: nvarchar(5000)
+              - column:
+                  name: status
+                  type: nvarchar(100)
+              - column:
+                  name: created_at
+                  type: timestamp(6)
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp(6)
+                  defaultValueComputed: CURRENT_TIMESTAMP
